@@ -506,8 +506,12 @@ $(STAGING_DIR):
 	@mkdir -p $(STAGING_DIR)
 	@ln -snf $(STAGING_DIR) $(BASE_DIR)/staging
 
+# RSYNC_VCS_EXCLUSIONS = \
+#	--exclude .svn --exclude .git --exclude .hg --exclude .bzr \
+#	--exclude CVS
+
 RSYNC_VCS_EXCLUSIONS = \
-	--exclude .svn --exclude .git --exclude .hg --exclude .bzr \
+	--exclude .svn --exclude .hg --exclude .bzr \
 	--exclude CVS
 
 STRIP_FIND_CMD = find $(TARGET_DIR)

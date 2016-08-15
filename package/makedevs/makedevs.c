@@ -39,9 +39,12 @@
 const char *bb_applet_name;
 uid_t recursive_uid;
 gid_t recursive_gid;
+int dereference_symlinks = 0;        // do not follow symlinks 
+
 unsigned int recursive_mode;
 #define PASSWD_PATH "etc/passwd"  /* MUST be relative */
 #define GROUP_PATH "etc/group"  /* MUST be relative */
+
 
 void bb_verror_msg(const char *s, va_list p)
 {
@@ -393,19 +396,26 @@ void bb_show_usage(void)
 
 int bb_recursive(const char *fpath, const struct stat *sb,
 		int tflag, struct FTW *ftwbuf){
-
+    if ((tflag == FTW_SL) && !dereference_symlinks) {  // File is a symlink
+	if (lchown(fpath, recursive_uid, recursive_gid) == -1) {
+	    bb_perror_msg("lchown failed for %s", fpath);
+	    return -1;
+	}
+	return 0;
+    }
+    else {
 	if (chown(fpath, recursive_uid, recursive_gid) == -1) {
-		bb_perror_msg("chown failed for %s", fpath);
-		return -1;
+	    bb_perror_msg("chown failed for %s", fpath);
+	    return -1;
 	}
 	if (recursive_mode != -1) {
-		if (chmod(fpath, recursive_mode) < 0) {
-			bb_perror_msg("chmod failed for %s", fpath);
-			return -1;
-		}
+	    if (chmod(fpath, recursive_mode) < 0) {
+		bb_perror_msg("chmod failed for %s", fpath);
+		return -1;
+	    }
 	}
-
 	return 0;
+    }
 }
 
 int main(int argc, char **argv)
